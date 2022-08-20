@@ -9,10 +9,10 @@
       @import url(http://fonts.googleapis.com/earlyaccess/notosanskr.css);
 
       * {
-          font-family: 'Noto Sans KR', sans-serif;
-          font-size: 10px;
-          margin: 0;
-          padding: 0;
+        font-family: "Noto Sans KR",  sans-serif;
+        font-size: 10px;
+        margin: 0;
+        padding: 0;
       }
       .container {
         display: flex;
@@ -43,16 +43,16 @@
         line-height: 122px;
       }
       .innerButton {
-        display: inline-block; 
-        text-align: center; 
+        display: inline-block;
+        text-align: center;
         justify-content: center;
         font-weight: 700;
-        font-size : 20px;
-        height:32px;
-        width: 32px; 
-        line-height: 1.6em; 
+        font-size: 20px;
+        height: 32px;
+        width: 32px;
+        line-height: 1.6em;
         color: white;
-        background-color: #075FBF; 
+        background-color: #075fbf;
         border-radius: 6px;
       }
       .timerLabel {
@@ -60,11 +60,11 @@
         justify-content: center;
         margin-top: 4rem;
         padding: 10px 20px;
-        background-color: #EFEFEF;
-        color: #075FBF;
+        background-color: #efefef;
+        color: #075fbf;
         width: 500px;
-        font-weight: 700;    
-        font-size : 20px;
+        font-weight: 700;
+        font-size: 20px;
         z-index: -1;
         border-radius: 12px;
       }
@@ -100,7 +100,7 @@
 
       window.addEventListener("keydown", (e) => {
         let keycode = e.keyCode;
-        if (keycode == 84) {
+        if (keycode === 84) {
           window.parent.postMessage({ type: "forcedWidgetClose" }, "*");
         }
       });

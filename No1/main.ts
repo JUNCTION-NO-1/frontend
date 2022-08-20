@@ -6,13 +6,15 @@ import "zep-script";
 import { ScriptPlayer } from "zep-script";
 
 // 변수에 SpriteSheet를 읽어 저장
-const dinos = [ScriptApp.loadSpritesheet('dino_level1.png', 48, 64),
-ScriptApp.loadSpritesheet('dino_level2.png', 48, 64),
-ScriptApp.loadSpritesheet('dino_level3.png', 48, 64),
-ScriptApp.loadSpritesheet('dino_level4.png', 48, 64),
-ScriptApp.loadSpritesheet('dino_level5.png', 48, 64),
-ScriptApp.loadSpritesheet('dino_level6.png', 48, 64),
-ScriptApp.loadSpritesheet('dino_level7.png', 48, 64)]
+const dinos = [
+  ScriptApp.loadSpritesheet("dino_level1.png", 48, 64),
+  ScriptApp.loadSpritesheet("dino_level2.png", 48, 64),
+  ScriptApp.loadSpritesheet("dino_level3.png", 48, 64),
+  ScriptApp.loadSpritesheet("dino_level4.png", 48, 64),
+  ScriptApp.loadSpritesheet("dino_level5.png", 48, 64),
+  ScriptApp.loadSpritesheet("dino_level6.png", 48, 64),
+  ScriptApp.loadSpritesheet("dino_level7.png", 48, 64),
+];
 
 // 라벨 - 안내
 function guideLabel(message: string) {
@@ -39,15 +41,53 @@ function ActionLabel(message: string) {
 }
 
 function dino(player: ScriptPlayer, level) {
-  player.sprite = dinos[level-1]
+  player.sprite = dinos[level - 1];
   player.sendUpdated();
 }
 
+const bg = ScriptApp.loadSpritesheet("background.png", 1920, 1080);
+
+const board = ScriptApp.loadSpritesheet("board.png", 360, 346);
+
+ScriptApp.onStart.Add(function () {
+  ScriptMap.putObject(0, 0, bg, { overlap: false });
+  ScriptMap.putObjectWithKey(5, 15, board, { overlap: false });
+});
+
+ScriptApp.addOnTileTouched(10, 20, function (player) {
+  ScriptApp.httpGet(
+    `http://52.78.184.202/dinosaur/ranking/?id=${player.id}&nickname=${player.name}`,
+    null,
+    (res) => {
+      const response = JSON.parse(res) as RankingResponse;
+      if (player.tag.dashBoardWidget === null) {
+        player.tag.dashBoardWidget = player.showWidget(
+          "dashBoard.html",
+          "top",
+          500,
+          500
+        );
+        player.tag.dashBoardWidget.sendMessage({
+          dashBoardInfo: [...response],
+        });
+        player.tag.dashBoardWidget.onMessage.Add(function (player, msg) {
+          if (msg.type === "dashBoardClose") {
+            if (player.tag.dashBoardWidget !== null) {
+              player.tag.dashBoardWidget.destroy();
+              player.tag.dashBoardWidget = null;
+            }
+          }
+        });
+      }
+    }
+  );
+});
+
 // 플레이어 입장
 ScriptApp.onJoinPlayer.Add(function (player) {
-  
   player.tag = {
     widget: null,
+    dashBoardWidget: null,
     level: 1,
     totalTime: 0,
   };
@@ -58,8 +98,9 @@ ScriptApp.onJoinPlayer.Add(function (player) {
       const response = JSON.parse(res) as DinosaurResponse;
       player.tag.level = response.level;
       player.tag.totalTime = response.totalTime;
-      dino(player, player.tag.level)
-    });
+      dino(player, player.tag.level);
+    }
+  );
   const message = `${player.name} 님이 <span style="${yellowTextstyle}">드래곤월드</span>에 입장하셨습니다.`;
   ScriptApp.sayToAll(`${player.name}님이 입장하셨습니다.`, 0x00ffff); // 하늘색으로 표시하기
   guideLabel(message);
@@ -72,7 +113,7 @@ ScriptApp.addOnKeyDown(65, function (player) {
 ScriptApp.onSay.Add(function (player, text) {
   if (isNumber(text)) {
     const time = Number(text);
-    player.tag.widget = player.showWidget("timer.html", "top", 1055, 500);
+    player.tag.widget = player.showWidget("timer.html", "top", 1920, 1080);
     if (player.tag.widget !== null) {
       player.tag.widget.sendMessage({
         timer: time,
@@ -90,7 +131,7 @@ ScriptApp.onSay.Add(function (player, text) {
                 const response = JSON.parse(res) as TimerEndResponse;
                 player.tag.level = response.level;
                 player.tag.totalTime = response.totalTime;
-                dino(player, player.tag.level)
+                dino(player, player.tag.level);
               }
             );
             if (player.tag.widget !== null) {
@@ -111,8 +152,6 @@ ScriptApp.onSay.Add(function (player, text) {
     }
   }
 });
-
-
 
 ScriptApp.onDestroy.Add(function () {
   ScriptMap.clearAllObjects();

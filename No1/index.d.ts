@@ -9,7 +9,9 @@ interface TimerEndResponse {
   level: number;
 }
 
-interface RankingResponse {
+type RankingResponse = Ranking[];
+
+interface Ranking {
   ranking: number;
   nickname: string;
   totalTime: number;
