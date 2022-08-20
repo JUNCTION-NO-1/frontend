@@ -16,7 +16,7 @@
         background: #075fbf;
         opacity: 80%;
       }
-  
+
       #title {
         width: 240px;
         height: 80px;
@@ -25,7 +25,7 @@
         font-size: 30px;
         letter-spacing: 2rem;
       }
-  
+
       #timer {
         width: 240px;
         height: 130px;
@@ -35,22 +35,22 @@
         line-height: 123px;
       }
       .innerButton {
-        display: inline-block; 
-        text-align: center; 
-        width:12em; 
-        height:1.2em; 
-        line-height: 1.2em; 
+        display: inline-block;
+        text-align: center;
+        width: 12em;
+        height: 1.2em;
+        line-height: 1.2em;
         color: white;
-        background-color: #075FBF; 
-        border-radius:12px;
+        background-color: #075fbf;
+        border-radius: 12px;
       }
       .timerLabel {
         margin-top: 1.4rem;
-        background-color: #EFEFEF;
-        color: #075FBF;
+        background-color: #efefef;
+        color: #075fbf;
         width: 30%;
-        opacity : 0;
-        font-size : 3rem;
+        opacity: 0;
+        font-size: 3rem;
         z-index: -1;
       }
     </style>
@@ -60,7 +60,8 @@
       <div id="title">TIMER</div>
       <div id="timer">-</div>
       <div class="timerLabel">
-        <span class="innerButton" id="key">T</span>  버튼을 누르면 타이머가 종료됩니다.
+        <span class="innerButton" id="key">T</span> 버튼을 누르면 타이머가
+        종료됩니다.
       </div>
     </div>
     <script type="text/javascript">
@@ -81,22 +82,20 @@
       var timerInterval;
       var timer = 0;
 
+      window.addEventListener("keydown", (e) => {
+        let keycode = e.keyCode;
+        if (keycode == 84) {
+          window.parent.postMessage({ type: "forcedWidgetClose" }, "*");
+        }
+      });
+
       window.addEventListener("message", function (e) {
         timer = e.data.timer * 60;
 
-        window.addEventListener("keydown", (e) => {
-          let keycode = e.keyCode
-          if (keycode == 84) {
-            window.parent.postMessage({ type: "widgetClose" }, "*");
-          }
-        })
-
-        clearInterval(timerInterval);
         timerInterval = setInterval(function () {
           if (--timer >= 0) {
-            document.getElementById("timer").innerText = timer.toMMSS();     
-          }
-          else {
+            document.getElementById("timer").innerText = timer.toMMSS();
+          } else {
             window.parent.postMessage({ type: "widgetClose" }, "*");
             clearInterval(timerInterval);
           }

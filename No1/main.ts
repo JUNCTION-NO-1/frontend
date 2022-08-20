@@ -30,51 +30,67 @@ function ActionLabel(message: string) {
 
 // 플레이어 입장
 ScriptApp.onJoinPlayer.Add(function (player) {
-  let nickname = player.name;
-  let message = `${nickname} 님이 <span style="${yellowTextstyle}">드래곤월드</span>에 입장하셨습니다.`;
   player.tag = {
     widget: null,
+    level: 0,
+    totalTime: 0,
   };
-  ScriptApp.sayToAll(`${nickname}님이 입장하셨습니다.`, 0x00ffff); // 하늘색으로 표시하기
+  ScriptApp.httpGet(
+    `http://52.78.184.202/dinosaur/?id=${player.id}&nickname=${player.name}`,
+    null,
+    (res) => {
+      const response = JSON.parse(res) as DinosaurResponse;
+      player.tag.level = response.level;
+      player.tag.totalTime = response.totalTime;
+    }
+  );
+  const message = `${player.name} 님이 <span style="${yellowTextstyle}">드래곤월드</span>에 입장하셨습니다.`;
+  ScriptApp.sayToAll(`${player.name}님이 입장하셨습니다.`, 0x00ffff); // 하늘색으로 표시하기
   guideLabel(message);
 });
 
-// // 공룡 post
-// ScriptApp.httpPost (
-//   "http://52.78.184.202:80/dinosour/",
-//   null,
-//   {
-//     'id' : player.id,
-//     'nickname' : player.name
-//   },
-//   (res) => {
-//     // 응답 결과를 JSON 오브젝트로 변경
-//     let response = JSON.parse(res);
-//     player.name = response.words[0];
-//     player.sendUpdated();
-//   }
-// );
-
 ScriptApp.addOnKeyDown(65, function (player) {
   ScriptApp.sayToAll(`${player.name}님 타이머 시간을 입력해주세요(분).`);
-  ScriptApp.onSay.Add(function (player, text) {
-    if (isNumber(text)) {
-      const time = Number(text);
-      player.tag.widget = player.showWidget("timer.html", "top", 1000, 1000);
-      if (player.tag.widget !== null) {
-        player.tag.widget.sendMessage({
-          timer: time,
-        });
-        player.tag.widget.onMessage.Add(function (player, msg) {
-          if (msg.type === "widgetClose") {
-            ScriptApp.sayToAll('끝났습니다.');
-            player.tag.widget.destroy();
-            player.tag.widget = null;
-          }
-        });
-      }
+});
+
+ScriptApp.onSay.Add(function (player, text) {
+  if (isNumber(text)) {
+    const time = Number(text);
+    player.tag.widget = player.showWidget("timer.html", "top", 1000, 1000);
+    if (player.tag.widget !== null) {
+      player.tag.widget.sendMessage({
+        timer: time,
+      });
+      player.tag.widget.onMessage.Add(function (player, msg) {
+        switch (msg.type) {
+          // forcedWidgetClose <-> widgetClose 변경
+          case "forcedWidgetClose":
+            ScriptApp.httpGet(
+              `http://52.78.184.202/dinosaur/quit/?id=${player.id}&minute=${time}`,
+              null,
+              (res) => {
+                const response = JSON.parse(res) as TimerEndResponse;
+                player.tag.level = response.level;
+                player.tag.totalTime = response.totalTime;
+              }
+            );
+            if (player.tag.widget !== null) {
+              player.tag.widget.destroy();
+              player.tag.widget = null;
+            }
+            break;
+          case "widgetClose":
+            if (player.tag.widget !== null) {
+              player.tag.widget.destroy();
+              player.tag.widget = null;
+            }
+            break;
+          default:
+            break;
+        }
+      });
     }
-  });
+  }
 });
 
 ScriptApp.onDestroy.Add(function () {
