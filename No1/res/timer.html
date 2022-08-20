@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100%;
+        background: #075fbf;
+        opacity: 80%;
+      }
+
+      #title {
+        width: 240px;
+        height: 130px;
+        color: white;
+      }
+
+      #timer {
+        width: 240px;
+        height: 130px;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <span id="title">T I M E R</span>
+      <div id="timer">-</div>
+    </div>
+    <script type="text/javascript">
+      Number.prototype.toMMSS = function () {
+        var _sec = this;
+        var minutes = parseInt(_sec / 60);
+        var seconds = _sec % 60;
+
+        if (minutes < 10) {
+          minutes = "0" + minutes;
+        }
+        if (seconds < 10) {
+          seconds = "0" + seconds;
+        }
+        return minutes + ":" + seconds;
+      };
+
+      var timerInterval;
+      var timer = 0;
+
+      window.addEventListener("message", function (e) {
+        timer = e.data.timer * 60;
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(function () {
+          if (--timer >= 0)
+            document.getElementById("timer").innerText = timer.toMMSS();
+          else clearInterval(timerInterval);
+        }, 1000);
+        document.getElementById("timer").innerText = timer.toMMSS();
+      });
+    </script>
+  </body>
+</html>
