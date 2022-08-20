@@ -81,6 +81,8 @@ ScriptApp.onSay.Add(function (player, text) {
         switch (msg.type) {
           // forcedWidgetClose <-> widgetClose 변경
           case "forcedWidgetClose":
+            const message = `${player.name} 님이 <span style="${yellowTextstyle}">드래곤</span>에 변화가 생긴 것 같아요!`;
+            guideLabel(message);
             ScriptApp.httpGet(
               `http://52.78.184.202/dinosaur/quit/?id=${player.id}&minute=${time}`,
               null,
@@ -88,6 +90,7 @@ ScriptApp.onSay.Add(function (player, text) {
                 const response = JSON.parse(res) as TimerEndResponse;
                 player.tag.level = response.level;
                 player.tag.totalTime = response.totalTime;
+                dino(player, player.tag.level)
               }
             );
             if (player.tag.widget !== null) {
