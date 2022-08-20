@@ -32,6 +32,9 @@ function ActionLabel(message: string) {
 ScriptApp.onJoinPlayer.Add(function (player) {
   let nickname = player.name;
   let message = `${nickname} 님이 <span style="${yellowTextstyle}">드래곤월드</span>에 입장하셨습니다.`;
+  player.tag = {
+    widget: null,
+  };
   ScriptApp.sayToAll(`${nickname}님이 입장하셨습니다.`, 0x00ffff); // 하늘색으로 표시하기
   guideLabel(message);
 });
@@ -57,10 +60,19 @@ ScriptApp.addOnKeyDown(65, function (player) {
   ScriptApp.onSay.Add(function (player, text) {
     if (isNumber(text)) {
       const time = Number(text);
-      let widget = player.showWidget("timer.html", "top", 1000, 1000);
-      widget.sendMessage({
-        timer: time,
-      });
+      player.tag.widget = player.showWidget("timer.html", "top", 1000, 1000);
+      if (player.tag.widget !== null) {
+        player.tag.widget.sendMessage({
+          timer: time,
+        });
+        player.tag.widget.onMessage.Add(function (player, msg) {
+          if (msg.type === "widgetClose") {
+            ScriptApp.sayToAll('끝났습니다.');
+            player.tag.widget.destroy();
+            player.tag.widget = null;
+          }
+        });
+      }
     }
   });
 });
