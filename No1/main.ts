@@ -56,7 +56,7 @@ ScriptApp.addOnKeyDown(65, function (player) {
 ScriptApp.onSay.Add(function (player, text) {
   if (isNumber(text)) {
     const time = Number(text);
-    player.tag.widget = player.showWidget("timer.html", "top", 1000, 1000);
+    player.tag.widget = player.showWidget("timer.html", "top", 1055, 500);
     if (player.tag.widget !== null) {
       player.tag.widget.sendMessage({
         timer: time,
