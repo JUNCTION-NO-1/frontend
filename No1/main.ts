@@ -14,7 +14,7 @@ const dinos = [
   ScriptApp.loadSpritesheet("dino_level5.png", 48, 64),
   ScriptApp.loadSpritesheet("dino_level6.png", 48, 64),
   ScriptApp.loadSpritesheet("dino_level7.png", 48, 64),
-];
+] as const;
 
 // 라벨 - 안내
 function guideLabel(message: string) {
@@ -40,8 +40,16 @@ function ActionLabel(message: string) {
   );
 }
 
-function dino(player: ScriptPlayer, level) {
-  player.sprite = dinos[level - 1];
+function dino(
+  player: ScriptPlayer,
+  beforeLevel: number,
+  afterLevel: number
+): void {
+  if (beforeLevel !== afterLevel) {
+    const message = `${player.name} 님이 <span style="${yellowTextstyle}">드래곤</span>에 변화가 생긴 것 같아요!<span style="${yellowTextstyle}">랭킹보드</span>로 이동하여 나의 랭킹을 확인해보세요!</span>`;
+    guideLabel(message);
+  }
+  player.sprite = dinos[afterLevel - 1];
   player.sendUpdated();
 }
 
@@ -96,9 +104,11 @@ ScriptApp.onJoinPlayer.Add(function (player) {
     null,
     (res) => {
       const response = JSON.parse(res) as DinosaurResponse;
+      const beforeLevel = player.tag.level;
       player.tag.level = response.level;
       player.tag.totalTime = response.totalTime;
-      dino(player, player.tag.level);
+      player.sendUpdated();
+      dino(player, beforeLevel, player.tag.level);
     }
   );
   const message = `${player.name} 님이 <span style="${yellowTextstyle}">드래곤월드</span>에 입장하셨습니다.`;
@@ -122,16 +132,17 @@ ScriptApp.onSay.Add(function (player, text) {
         switch (msg.type) {
           // forcedWidgetClose <-> widgetClose 변경
           case "forcedWidgetClose":
-            const message = `${player.name} 님이 <span style="${yellowTextstyle}">드래곤</span>에 변화가 생긴 것 같아요!`;
-            guideLabel(message);
             ScriptApp.httpGet(
               `http://52.78.184.202/dinosaur/quit/?id=${player.id}&minute=${time}`,
               null,
               (res) => {
                 const response = JSON.parse(res) as TimerEndResponse;
+                const beforeLevel = player.tag.level;
                 player.tag.level = response.level;
                 player.tag.totalTime = response.totalTime;
-                dino(player, player.tag.level);
+                dino(player, beforeLevel, player.tag.level);
+                // const message = `<span style="${yellowTextstyle}">랭킹보드</span>로 이동하여 나의 랭킹을 확인해보세요!`;
+                // guideLabel(message);
               }
             );
             if (player.tag.widget !== null) {
